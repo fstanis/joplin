@@ -677,6 +677,11 @@ class NoteScreenComponent extends BaseScreenComponent {
 		Clipboard.setString(Note.markdownTag(note));
 	}
 
+	copyExternalLink_onPress() {
+		const note = this.state.note;
+		Clipboard.setString(`joplin://note/${note.id}`);
+	}
+
 	sideMenuOptions() {
 		const note = this.state.note;
 		if (!note) return [];
@@ -771,6 +776,12 @@ class NoteScreenComponent extends BaseScreenComponent {
 				title: _('Copy Markdown link'),
 				onPress: () => {
 					this.copyMarkdownLink_onPress();
+				},
+			});
+			output.push({
+				title: _('Copy External link'),
+				onPress: () => {
+					this.copyExternalLink_onPress();
 				},
 			});
 		}

@@ -1,5 +1,5 @@
 const React = require('react');
-const { AppState, Keyboard, NativeModules, BackHandler, Platform, Animated, View, StatusBar } = require('react-native');
+const { AppState, Keyboard, NativeModules, BackHandler, Platform, Animated, View, StatusBar, Linking } = require('react-native');
 const SafeAreaView = require('lib/components/SafeAreaView');
 const { connect, Provider } = require('react-redux');
 const { BackButtonService } = require('lib/services/back-button.js');
@@ -660,10 +660,40 @@ class AppComponent extends React.Component {
 		});
 
 		AppState.addEventListener('change', this.onAppStateChange_);
+
+		if (Platform.OS === 'android') {
+			Linking.getInitialURL().then(url => {
+				this.navigate(url);
+			});
+		} else {
+			Linking.addEventListener('url', this.handleOpenURL);
+		}
+	}
+
+	handleOpenURL(event) {
+		this.navigate(event.url);
+	}
+
+	async navigate(url) {
+		if (!url) return;
+		reg.logger().info(`navigate to ${url}`);
+		const p = url.split('/');
+		const noteId = p[p.length - 1];
+
+		await this.props.dispatch({ type: 'NAV_BACK' });
+
+		await this.props.dispatch({ type: 'SIDE_MENU_CLOSE' });
+
+		await this.props.dispatch({
+			type: 'NAV_GO',
+			noteId: noteId,
+			routeName: 'Note',
+		});
 	}
 
 	componentWillUnmount() {
 		AppState.removeEventListener('change', this.onAppStateChange_);
+		Linking.removeEventListener(this.handleOpenURL);
 	}
 
 	componentDidUpdate(prevProps) {
